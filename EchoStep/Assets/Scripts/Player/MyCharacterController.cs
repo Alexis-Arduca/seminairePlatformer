@@ -78,8 +78,6 @@ public class MyCharacterController : MonoBehaviour
 
         if (Input.GetButtonDown("Jump") && !isGrounded && isWalled)
         {
-            
-
             Vector3 wallDirection = -wallNormal;
             controller.Move(wallDirection * wallJumpForce * Time.deltaTime);
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);

@@ -61,7 +61,7 @@ public class EchoMechanics : MonoBehaviour
 
         recordedFrames.Add(frame);
 
-        if (timer >= recordDuration) { isRecording = false; }
+        if (timer >= recordDuration) { isRecording = false; GameEventsManager.instance.playerEvents.OnPlayerActiveEcho(); }
     }
 
     /// <summary>

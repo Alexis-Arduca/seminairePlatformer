@@ -49,7 +49,10 @@ public class EchoReplay : MonoBehaviour
                 if (input == "S") move -= transform.forward;
                 if (input == "A") move -= transform.right;
                 if (input == "D") move += transform.right;
-                if (input == "Jump" && controller.isGrounded) { velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity); }
+                if (input == "Jump" && controller.isGrounded)
+                {
+                    velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
+                }
             }
 
             controller.Move(move * moveSpeed * Time.deltaTime);
@@ -58,6 +61,12 @@ public class EchoReplay : MonoBehaviour
 
             yield return null;
         }
+
+        velocity = Vector3.zero;
+        controller.Move(Vector3.zero);
+
+        yield return new WaitForSeconds(0.1f);
+        GameEventsManager.instance.playerEvents.OnPlayerActiveEcho();
 
         Destroy(gameObject, 1f);
     }

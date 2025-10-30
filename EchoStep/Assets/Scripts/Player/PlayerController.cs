@@ -24,9 +24,9 @@ public class Player : MonoBehaviour
     public TMP_Text dataShardsText;
     public TMP_Text modulePartsText;
 
-    private int energyCores = 0;
-    private int dataShards = 0;
-    private int moduleParts = 0;
+    public int energyCores = 0;
+    public int dataShards = 0;
+    public int moduleParts = 0;
 
     private void Start()
     {
@@ -63,6 +63,9 @@ public class Player : MonoBehaviour
 
         // Dash Usage
         if (Input.GetKeyDown(KeyCode.LeftShift) && canDash) { StartCoroutine(PerformDash()); }
+
+        // Pause Usage
+        if (Input.GetKeyDown(KeyCode.Escape)) { GameEventsManager.instance.pauseEvents.OnPauseButtonPressed(); }
     }
 
     private void UpdateCollectiblesList(int id)

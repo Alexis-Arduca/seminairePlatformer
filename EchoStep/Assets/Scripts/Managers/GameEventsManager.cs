@@ -6,6 +6,7 @@ public class GameEventsManager : MonoBehaviour
 
     public CollectibleEvents collectibleEvents;
     public PlayerEvents playerEvents;
+    public PauseEvents pauseEvents;
 
     private void Awake()
     {
@@ -18,5 +19,6 @@ public class GameEventsManager : MonoBehaviour
         // initialize all events
         collectibleEvents = new CollectibleEvents();
         playerEvents = new PlayerEvents();
+        pauseEvents = new PauseEvents();
     }
 }

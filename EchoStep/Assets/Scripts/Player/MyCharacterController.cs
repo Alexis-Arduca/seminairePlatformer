@@ -7,7 +7,7 @@ public class MyCharacterController : MonoBehaviour
     [SerializeField] private float baseMoveSpeed = 5f;
     [SerializeField] private float gravity = -9.81f;
     [SerializeField] private float jumpHeight = 2f;
-    [SerializeField] private float mouseSensitivity = 100f;
+    [SerializeField] private float mouseSensitivity = 200f;
 
     private UnityEngine.CharacterController controller;
     public Vector3 velocity;

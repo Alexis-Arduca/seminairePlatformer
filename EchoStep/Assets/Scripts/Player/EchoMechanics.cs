@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
+using TMPro;
 
 [System.Serializable]
 public class EchoFrameData
@@ -13,12 +15,16 @@ public class EchoMechanics : MonoBehaviour
 {
     [Header("Echo Prefab")]
     public GameObject echoPrefab;
+    public TextFade textFade;
+
+    [Header("UI Elements")]
+    public List<Texture> frames;
+    public TMP_Text textRecording;
 
     private Vector3 echoStartPosition;
     private float recordDuration;
     private float timer;
     private bool isRecording;
-    private bool startEcho = false;
 
     private List<EchoFrameData> recordedFrames = new List<EchoFrameData>();
 
@@ -27,14 +33,13 @@ public class EchoMechanics : MonoBehaviour
         if (isRecording)
         {
             RecordInputs();
+            UpdateRecordingTimer();
         }
     }
 
     /// <summary>
     /// Record Player input
     /// </summary>
-    /// <param name="startPosition">Position where the player start the record, use to instantiate the Echo at this position</param>
-    /// <param name="echoRecordTime">Record Time</param>
     public void CallEchoRecorder(Vector3 startPosition, float echoRecordTime)
     {
         recordedFrames.Clear();
@@ -43,6 +48,12 @@ public class EchoMechanics : MonoBehaviour
         recordDuration = echoRecordTime;
         timer = 0f;
         isRecording = true;
+
+        if (textRecording != null)
+        {
+            textRecording.gameObject.SetActive(true);
+            textRecording.text = $"Echo Recording: {recordDuration:0.0}s";
+        }
     }
 
     private void RecordInputs()
@@ -61,19 +72,59 @@ public class EchoMechanics : MonoBehaviour
 
         recordedFrames.Add(frame);
 
-        if (timer >= recordDuration) { isRecording = false; GameEventsManager.instance.playerEvents.OnPlayerActiveEcho(); }
+        if (timer >= recordDuration)
+        {
+            isRecording = false;
+
+            if (textRecording != null)
+                StartCoroutine(HideRecordingText());
+
+            GameEventsManager.instance.playerEvents.OnPlayerActiveEcho();
+        }
+    }
+
+    private void UpdateRecordingTimer()
+    {
+        if (textRecording != null)
+        {
+            float remaining = Mathf.Max(0, recordDuration - timer);
+            textRecording.text = $"Recording: {remaining:0.0}s";
+        }
+    }
+
+    private IEnumerator HideRecordingText()
+    {
+        yield return new WaitForSeconds(0.5f);
+        textRecording.text = "Echo Recorded";
+        GameEventsManager.instance.playerEvents.OnPlayerActiveRecord(frames);
     }
 
     /// <summary>
-    /// Instantiate the Echo Prefab and call is function to apply Input
+    /// Instantiate the Echo Prefab and play its replay
     /// </summary>
     public void CallEchoActivation()
     {
-        if (recordedFrames.Count == 0) return;
+        if (recordedFrames.Count == 0)
+        {
+            textFade.PlayFade("No Echo Record available");
+            return;
+        }
 
         GameObject echo = Instantiate(echoPrefab, echoStartPosition, Quaternion.identity);
+
+        EchoAppearance appearance = echo.GetComponent<EchoAppearance>();
         EchoReplay replay = echo.GetComponent<EchoReplay>();
 
-        if (replay != null) { replay.StartReplay(recordedFrames, recordDuration); }
+        if (replay != null)
+        {
+            float delay = appearance != null ? appearance.AppearDuration : 0f;
+            StartCoroutine(StartReplayAfterDelay(replay, recordedFrames, recordDuration, delay));
+        }
+    }
+
+    private IEnumerator StartReplayAfterDelay(EchoReplay replay, List<EchoFrameData> frames, float duration, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        replay.StartReplay(frames, duration);
     }
 }

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 5655367670589450364}
   - component: {fileID: 2463360844197780216}
   - component: {fileID: 8781488759503810383}
+  - component: {fileID: -796804611478939236}
   m_Layer: 0
   m_Name: Echo
   m_TagString: Echo
@@ -155,6 +156,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EchoReplay
   moveSpeed: 5
   jumpForce: 2
+  frames:
+  - {fileID: 2800000, guid: f4c768817a8429e4f9efd3298ace1c7e, type: 3}
+  - {fileID: 2800000, guid: 7f8042791ade72641b83fb91ba25da4d, type: 3}
+  - {fileID: 2800000, guid: 008bb953c5db91243abb9abc1212ef9c, type: 3}
+  - {fileID: 2800000, guid: c75cd0478803df749bc77805eda48b20, type: 3}
+  - {fileID: 2800000, guid: c75cd0478803df749bc77805eda48b20, type: 3}
 --- !u!54 &8781488759503810383
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -182,3 +189,17 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &-796804611478939236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6285100153165733714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c17a8695c3e168d41bf938cb83b5a8c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EchoAppearance
+  appearDuration: 0.6
+  floatHeight: 0.5

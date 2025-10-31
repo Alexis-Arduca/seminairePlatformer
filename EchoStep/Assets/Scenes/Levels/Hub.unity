@@ -1563,6 +1563,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3903260213622633454, guid: d20ff434915dfb044852a8be2cdf49c9, type: 3}
+      propertyPath: isGrounded
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3903260213622633454, guid: d20ff434915dfb044852a8be2cdf49c9, type: 3}
+      propertyPath: velocity.y
+      value: -2.0586214
+      objectReference: {fileID: 0}
+    - target: {fileID: 3903260213622633454, guid: d20ff434915dfb044852a8be2cdf49c9, type: 3}
+      propertyPath: wallJumpForce
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3903260213622633454, guid: d20ff434915dfb044852a8be2cdf49c9, type: 3}
+      propertyPath: maxWallDistance
+      value: 0.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3903260213622633454, guid: d20ff434915dfb044852a8be2cdf49c9, type: 3}
+      propertyPath: wallJumpDecayRate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3903260213622633454, guid: d20ff434915dfb044852a8be2cdf49c9, type: 3}
+      propertyPath: wallJumpHorizontalForce
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 5806830665745496917, guid: d20ff434915dfb044852a8be2cdf49c9, type: 3}
       propertyPath: m_Name
       value: Player

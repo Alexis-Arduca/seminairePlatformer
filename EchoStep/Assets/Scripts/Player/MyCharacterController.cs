@@ -14,6 +14,7 @@ public class MyCharacterController : MonoBehaviour
     private UnityEngine.CharacterController controller;
     private Player player;
     private Vector3 horizontalVelocity = Vector3.zero; // Horizontal velocity for momentum conservation
+    public bool isDashing { get; private set; } = false; // Track if player is dashing
 
     [Header("Jump Settings")]
     public Vector3 velocity;
@@ -85,15 +86,19 @@ public class MyCharacterController : MonoBehaviour
             // Air movement: conserve momentum with limited control
             Vector3 desiredVelocity = inputDirection * baseMoveSpeed * airControlMultiplier * inputMagnitude;
 
+            // Reduce air drag during dash to preserve dash momentum
+            float currentAirDrag = isDashing ? airDrag * 0.3f : airDrag;
+
             if (inputMagnitude > 0.1f)
             {
                 // Limited air control - blend current velocity with input
-                horizontalVelocity = Vector3.Lerp(horizontalVelocity, desiredVelocity, airDrag * Time.deltaTime);
+                horizontalVelocity = Vector3.Lerp(horizontalVelocity, desiredVelocity, currentAirDrag * Time.deltaTime);
             }
             else
             {
-                // Apply light air drag to slow down gradually
-                horizontalVelocity = Vector3.Lerp(horizontalVelocity, Vector3.zero, airDrag * Time.deltaTime * 0.5f);
+                // Apply light air drag to slow down gradually (even less during dash)
+                float dragMultiplier = isDashing ? 0.2f : 0.5f;
+                horizontalVelocity = Vector3.Lerp(horizontalVelocity, Vector3.zero, currentAirDrag * Time.deltaTime * dragMultiplier);
             }
         }
 
@@ -203,6 +208,33 @@ public class MyCharacterController : MonoBehaviour
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             isDoubleJump = false;
         }
+    }
+
+    /// <summary>
+    /// Apply dash velocity - integrates with momentum system
+    /// </summary>
+    /// <param name="dashDirection">Direction of the dash</param>
+    /// <param name="dashForce">Force of the dash</param>
+    public void ApplyDashVelocity(Vector3 dashDirection, float dashForce)
+    {
+        if (!isGrounded)
+        {
+            // In air: add dash velocity to existing momentum for useful air dashes
+            horizontalVelocity += dashDirection * dashForce;
+        }
+        else
+        {
+            // On ground: can either add or set velocity (adding preserves some momentum)
+            horizontalVelocity += dashDirection * dashForce;
+        }
+    }
+
+    /// <summary>
+    /// Set dashing state (called by Player controller)
+    /// </summary>
+    public void SetDashing(bool dashing)
+    {
+        isDashing = dashing;
     }
 
     /// <summary>

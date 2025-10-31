@@ -31,7 +31,7 @@ public class SmoothCameraController : MonoBehaviour
 
     [Header("Camera Lean Settings")]
     [SerializeField] private bool enableCameraLean = true;
-    [SerializeField] private float leanAmount = 5f; // Degrees to lean when turning
+    [SerializeField] private float leanAmount = 0.15f; // Degrees to lean when turning
     [SerializeField] private float leanSmoothing = 8f; // How fast lean applies
 
     [Header("Movement-Based Effects")]

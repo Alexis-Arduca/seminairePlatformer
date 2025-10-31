@@ -644,6 +644,8 @@ MonoBehaviour:
   onColor: {r: 0, g: 1, b: 0, a: 1}
   emissionIntensity: 2
   debugScore: 0
+  trackEnergyCores: 0
+  playerReference: {fileID: 0}
 --- !u!1 &6675088363892255634
 GameObject:
   m_ObjectHideFlags: 0

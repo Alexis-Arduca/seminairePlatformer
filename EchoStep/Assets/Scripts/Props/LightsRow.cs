@@ -17,7 +17,11 @@ public class LightsRow : MonoBehaviour
 
     [Header("Debug / Testing")]
     public int debugScore;
-    
+
+    [Header("Energy Cores Tracking")]
+    [SerializeField] private bool trackEnergyCores = false; // If true, automatically tracks player's energy cores
+    [SerializeField] private Player playerReference; // Reference to player (auto-found if null)
+
     // ---- internals ----
     const string ContainerName = "_Bulbs";
     Transform _container;
@@ -35,7 +39,42 @@ public class LightsRow : MonoBehaviour
     {
         EnsureContainer();
         UpdateLayout();        // reconcile children
-        SetScore(debugScore);  // initial state
+
+        // Set up energy cores tracking if enabled
+        if (trackEnergyCores)
+        {
+            if (playerReference == null)
+            {
+                playerReference = FindObjectOfType<Player>();
+            }
+
+            if (playerReference != null)
+            {
+                // Subscribe to energy cores updates
+                UpdateEnergyCores(playerReference.energyCores);
+            }
+        }
+        else
+        {
+            SetScore(debugScore);  // initial state
+        }
+    }
+
+    void OnDestroy()
+    {
+        // Unsubscribe if we were tracking
+        if (trackEnergyCores && playerReference != null)
+        {
+            // Cleanup if needed
+        }
+    }
+
+    /// <summary>
+    /// Update lights based on energy cores count
+    /// </summary>
+    public void UpdateEnergyCores(int energyCores)
+    {
+        SetScore(energyCores);
     }
 
 #if UNITY_EDITOR
@@ -55,8 +94,11 @@ public class LightsRow : MonoBehaviour
 
     void Update()
     {
-        // simple live testing in Play Mode
-        SetScore(debugScore);
+        // simple live testing in Play Mode (only if not tracking energy cores)
+        if (!trackEnergyCores)
+        {
+            SetScore(debugScore);
+        }
     }
 #endif
 

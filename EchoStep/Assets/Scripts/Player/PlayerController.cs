@@ -22,6 +22,9 @@ public class Player : MonoBehaviour
     private DashEffects dashEffects;
     private SmoothCameraController smoothCameraController;
 
+    [Header("Lights Row References")]
+    [SerializeField] private LightsRow[] lightsRows; // Optional: manually assign lights rows, or leave empty to auto-find
+
     [Header("Collectibles Count")]
     public TMP_Text energyCoresText;
     public TMP_Text dataShardsText;
@@ -39,6 +42,12 @@ public class Player : MonoBehaviour
         characterController = GetComponent<MyCharacterController>();
         dashEffects = GetComponent<DashEffects>();
         smoothCameraController = GetComponent<SmoothCameraController>();
+
+        // Auto-find lights rows if not manually assigned
+        if (lightsRows == null || lightsRows.Length == 0)
+        {
+            lightsRows = FindObjectsOfType<LightsRow>();
+        }
 
         UpdateHud();
 
@@ -93,6 +102,26 @@ public class Player : MonoBehaviour
         energyCoresText.text = "Energy Cores: " + energyCores;
         dataShardsText.text = "Data Shards: " + dataShards;
         modulePartsText.text = "Module Parts: " + moduleParts;
+
+        // Update all lights rows with current energy cores count
+        UpdateLightsRows();
+    }
+
+    /// <summary>
+    /// Update all lights rows with current energy cores count
+    /// </summary>
+    private void UpdateLightsRows()
+    {
+        if (lightsRows != null && lightsRows.Length > 0)
+        {
+            foreach (LightsRow lightsRow in lightsRows)
+            {
+                if (lightsRow != null)
+                {
+                    lightsRow.UpdateEnergyCores(energyCores);
+                }
+            }
+        }
     }
 
     /// <summary>

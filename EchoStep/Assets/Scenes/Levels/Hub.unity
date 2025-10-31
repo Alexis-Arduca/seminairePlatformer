@@ -712,6 +712,10 @@ PrefabInstance:
       propertyPath: debugScore
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8372658055686678563, guid: cc9db52962a274002a286d03dc9c9ced, type: 3}
+      propertyPath: trackEnergyCores
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 3781414216777897534, guid: cc9db52962a274002a286d03dc9c9ced, type: 3}
@@ -1812,11 +1816,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2933127672161300503, guid: cc9db52962a274002a286d03dc9c9ced, type: 3}
       propertyPath: m_Color.g
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2933127672161300503, guid: cc9db52962a274002a286d03dc9c9ced, type: 3}
       propertyPath: m_Color.r
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6654941111596303533, guid: cc9db52962a274002a286d03dc9c9ced, type: 3}
       propertyPath: m_Name
@@ -1824,6 +1828,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8372658055686678563, guid: cc9db52962a274002a286d03dc9c9ced, type: 3}
       propertyPath: debugScore
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8372658055686678563, guid: cc9db52962a274002a286d03dc9c9ced, type: 3}
+      propertyPath: trackEnergyCores
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -2107,6 +2115,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8372658055686678563, guid: cc9db52962a274002a286d03dc9c9ced, type: 3}
       propertyPath: count
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8372658055686678563, guid: cc9db52962a274002a286d03dc9c9ced, type: 3}
+      propertyPath: trackEnergyCores
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []

@@ -40,18 +40,6 @@ public class Player : MonoBehaviour
         dashEffects = GetComponent<DashEffects>();
         smoothCameraController = GetComponent<SmoothCameraController>();
 
-        // Create DashEffects component if it doesn't exist
-        if (dashEffects == null)
-        {
-            dashEffects = gameObject.AddComponent<DashEffects>();
-        }
-
-        // Create SmoothCameraController component if it doesn't exist
-        if (smoothCameraController == null)
-        {
-            smoothCameraController = gameObject.AddComponent<SmoothCameraController>();
-        }
-
         UpdateHud();
 
         GameEventsManager.instance.collectibleEvents.onCollectibleGet += UpdateCollectiblesList;

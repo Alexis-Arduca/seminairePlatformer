@@ -1122,6 +1122,8 @@ GameObject:
   - component: {fileID: 3903260213622633454}
   - component: {fileID: 5865600688615728043}
   - component: {fileID: 3082257012752596084}
+  - component: {fileID: 978740199184785083}
+  - component: {fileID: 2696322744381763958}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -1137,8 +1139,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5806830665745496917}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.8016462, y: 1.05, z: 0.7653754}
+  m_LocalRotation: {x: -0, y: 0.99945086, z: -0, w: 0.03313531}
+  m_LocalPosition: {x: 1.3, y: 1.03, z: 10.47}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1146,7 +1148,7 @@ Transform:
   - {fileID: 8535422543215635338}
   - {fileID: 8164854993085725693}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 176.202, z: 0}
 --- !u!33 &9197831607255060463
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -1317,9 +1319,17 @@ MonoBehaviour:
   gravity: -9.81
   jumpHeight: 2
   mouseSensitivity: 100
-  velocity: {x: 0, y: 0, z: 0}
-  isGrounded: 0
+  airControlMultiplier: 0.2
+  groundFriction: 15
+  airDrag: 2
+  horizontalVelocity: {x: 0, y: 0, z: 0}
+  velocity: {x: 0, y: -2.0586214, z: 0}
+  isGrounded: 1
   isWalled: 0
+  wallJumpForce: 1
+  wallJumpHorizontalForce: 7
+  wallJumpDecayRate: 1
+  maxWallDistance: 0.9
 --- !u!114 &5865600688615728043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1365,6 +1375,59 @@ MonoBehaviour:
   - {fileID: 2800000, guid: f4c768817a8429e4f9efd3298ace1c7e, type: 3}
   - {fileID: 2800000, guid: f4c768817a8429e4f9efd3298ace1c7e, type: 3}
   textRecording: {fileID: 5314272069277197363}
+--- !u!114 &978740199184785083
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5806830665745496917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3af6ad1ac531d4e409b07f28eb460818, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SmoothCameraController
+  playerCamera: {fileID: 0}
+  target: {fileID: 0}
+  mouseSensitivity: 2
+  verticalLookLimit: 80
+  cameraOffset: {x: 0, y: 2.47, z: -5.67}
+  positionSmoothing: 10
+  enableMovementOffset: 1
+  movementOffsetAmount: 0.5
+  movementOffsetSmoothing: 8
+  rotationSmoothing: 15
+  invertY: 0
+  lockVerticalRotation: 0
+  enableCameraBob: 1
+  bobAmount: 0.05
+  bobFrequency: 10
+  enableCameraLean: 1
+  leanAmount: 0.15
+  leanSmoothing: 8
+  speedFOVMultiplier: 0.5
+  maxSpeedFOV: 10
+  useSmoothDamp: 1
+  smoothDampTime: 0.1
+--- !u!114 &2696322744381763958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5806830665745496917}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfb32f1612da3421e954f7221dabcdaf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DashEffects
+  playerCamera: {fileID: 0}
+  dashFOVIncrease: 10
+  fovSmoothingSpeed: 15
+  shakeIntensity: 0.15
+  shakeFrequency: 30
+  shakeDirection: {x: 1, y: 1, z: 1}
+  enableMotionBlur: 0
 --- !u!1 &5813512449757269053
 GameObject:
   m_ObjectHideFlags: 0

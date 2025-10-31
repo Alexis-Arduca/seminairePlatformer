@@ -5,6 +5,7 @@ public class EchoAppearance : MonoBehaviour
 {
     [SerializeField] private float appearDuration = 0.6f;
     [SerializeField] private float floatHeight = 0.5f;
+    [SerializeField] private ParticleSystem appearParticles; // assigner dans l’inspecteur
 
     private Renderer[] renderers;
     private Vector3 startPos;
@@ -28,6 +29,7 @@ public class EchoAppearance : MonoBehaviour
         Vector3 targetPos = startPos;
         transform.position = startPos - Vector3.up * floatHeight;
 
+        // 🔹 Prépare les rendus pour le fade-in
         foreach (var r in renderers)
         {
             foreach (var mat in r.materials)
@@ -38,6 +40,15 @@ public class EchoAppearance : MonoBehaviour
             }
         }
 
+        // 🔹 Joue les particules si assignées
+        if (appearParticles != null)
+        {
+            appearParticles.transform.parent = null; // détache pour qu'elles restent visibles même si l'objet bouge
+            appearParticles.Play();
+            Destroy(appearParticles.gameObject, appearParticles.main.duration);
+        }
+
+        // 🔹 Animation de montée + fade-in
         while (t < appearDuration)
         {
             t += Time.deltaTime;

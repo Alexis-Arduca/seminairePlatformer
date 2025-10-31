@@ -9,8 +9,11 @@ public class MyCharacterController : MonoBehaviour
     [SerializeField] private float jumpHeight = 2f;
     [SerializeField] private float mouseSensitivity = 200f;
     [SerializeField] private float airControlMultiplier = 0.2f; // Very limited air control (20% of ground control)
+    [SerializeField] private float groundFriction = 15f; // How quickly velocity reduces on ground when not inputting
+    [SerializeField] private float airDrag = 2f; // Air resistance when in air
     private UnityEngine.CharacterController controller;
     private Player player;
+    private Vector3 horizontalVelocity = Vector3.zero; // Horizontal velocity for momentum conservation
 
     [Header("Jump Settings")]
     public Vector3 velocity;
@@ -55,36 +58,48 @@ public class MyCharacterController : MonoBehaviour
             wallJumpVelocity = 0f;
         }
 
-        float moveSpeed = baseMoveSpeed;
-
-        // Apply air control limitation when not grounded
-        if (!isGrounded)
-        {
-            moveSpeed *= airControlMultiplier;
-        }
-
+        // Get input direction
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
-        Vector3 move = transform.right * x + transform.forward * z;
-        controller.Move(move * moveSpeed * Time.deltaTime);
+        Vector3 inputDirection = (transform.right * x + transform.forward * z).normalized;
+        float inputMagnitude = Mathf.Clamp01(new Vector2(x, z).magnitude);
 
-        // Apply wall jump horizontal push separately (not affected by moveSpeed)
-        if (isWallJumping)
+        if (isGrounded)
         {
-            // Apply pushback directly in world space
-            Vector3 pushback = wallJumpDirection * wallJumpVelocity * Time.deltaTime;
-            controller.Move(pushback);
+            // Ground movement: apply acceleration and friction
+            Vector3 desiredVelocity = inputDirection * baseMoveSpeed * inputMagnitude;
 
-            // Decay wall jump velocity over time
-            wallJumpVelocity *= wallJumpDecayRate;
-
-            // Stop wall jump when velocity is very small
-            if (wallJumpVelocity < 0.5f)
+            if (inputMagnitude > 0.1f)
             {
-                isWallJumping = false;
-                wallJumpVelocity = 0f;
+                // Accelerate toward desired velocity
+                horizontalVelocity = Vector3.Lerp(horizontalVelocity, desiredVelocity, groundFriction * Time.deltaTime);
+            }
+            else
+            {
+                // Apply friction when no input
+                horizontalVelocity = Vector3.Lerp(horizontalVelocity, Vector3.zero, groundFriction * Time.deltaTime);
             }
         }
+        else
+        {
+            // Air movement: conserve momentum with limited control
+            Vector3 desiredVelocity = inputDirection * baseMoveSpeed * airControlMultiplier * inputMagnitude;
+
+            if (inputMagnitude > 0.1f)
+            {
+                // Limited air control - blend current velocity with input
+                horizontalVelocity = Vector3.Lerp(horizontalVelocity, desiredVelocity, airDrag * Time.deltaTime);
+            }
+            else
+            {
+                // Apply light air drag to slow down gradually
+                horizontalVelocity = Vector3.Lerp(horizontalVelocity, Vector3.zero, airDrag * Time.deltaTime * 0.5f);
+            }
+        }
+
+
+        // Apply horizontal velocity
+        controller.Move(horizontalVelocity * Time.deltaTime);
 
         // Reset wall detection if grounded (wall jump only works in air)
         if (isGrounded)
@@ -156,6 +171,10 @@ public class MyCharacterController : MonoBehaviour
                 wallJumpDirection = horizontalWallNormal;
                 wallJumpVelocity = wallJumpHorizontalForce;
                 isWallJumping = true;
+
+                // Apply wall jump pushback as an impulse to horizontal velocity
+                horizontalVelocity += wallJumpDirection * wallJumpHorizontalForce;
+
                 Debug.Log($"Wall Jump! Normal: {wallNormal}, Direction: {wallJumpDirection}, Force: {wallJumpVelocity}");
             }
             else
@@ -166,6 +185,10 @@ public class MyCharacterController : MonoBehaviour
                 wallJumpDirection.Normalize();
                 wallJumpVelocity = wallJumpHorizontalForce;
                 isWallJumping = true;
+
+                // Apply wall jump pushback as an impulse to horizontal velocity
+                horizontalVelocity += wallJumpDirection * wallJumpHorizontalForce;
+
                 Debug.Log($"Wall Jump (fallback)! Direction: {wallJumpDirection}, Force: {wallJumpVelocity}");
             }
 

@@ -20,6 +20,7 @@ public class Player : MonoBehaviour
     public CharacterController controller;
     private MyCharacterController characterController;
     private DashEffects dashEffects;
+    private SmoothCameraController smoothCameraController;
 
     [Header("Collectibles Count")]
     public TMP_Text energyCoresText;
@@ -37,11 +38,18 @@ public class Player : MonoBehaviour
         if (controller == null) { controller = GetComponent<CharacterController>(); }
         characterController = GetComponent<MyCharacterController>();
         dashEffects = GetComponent<DashEffects>();
+        smoothCameraController = GetComponent<SmoothCameraController>();
 
         // Create DashEffects component if it doesn't exist
         if (dashEffects == null)
         {
             dashEffects = gameObject.AddComponent<DashEffects>();
+        }
+
+        // Create SmoothCameraController component if it doesn't exist
+        if (smoothCameraController == null)
+        {
+            smoothCameraController = gameObject.AddComponent<SmoothCameraController>();
         }
 
         UpdateHud();

@@ -13,7 +13,7 @@ public class MyCharacterController : MonoBehaviour
     [SerializeField] private float airDrag = 2f; // Air resistance when in air
     private UnityEngine.CharacterController controller;
     private Player player;
-    private Vector3 horizontalVelocity = Vector3.zero; // Horizontal velocity for momentum conservation
+    public Vector3 horizontalVelocity = Vector3.zero; // Horizontal velocity for momentum conservation (public for camera effects)
     public bool isDashing { get; private set; } = false; // Track if player is dashing
 
     [Header("Jump Settings")]
@@ -143,8 +143,14 @@ public class MyCharacterController : MonoBehaviour
             }
         }
 
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        transform.Rotate(Vector3.up * mouseX);
+        // Mouse look is now handled by SmoothCameraController
+        // If no camera controller, use fallback mouse look
+        SmoothCameraController cameraController = GetComponent<SmoothCameraController>();
+        if (cameraController == null)
+        {
+            float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+            transform.Rotate(Vector3.up * mouseX);
+        }
 
         JumpManager();
 
@@ -163,7 +169,7 @@ public class MyCharacterController : MonoBehaviour
             return;
         }
 
-        // Wall jump takes priority over double jump
+        // Wall jump takes absolute priority - check this first
         if (Input.GetButtonDown("Jump") && !isGrounded && isWalled)
         {
             // Calculate horizontal direction away from wall
@@ -174,13 +180,19 @@ public class MyCharacterController : MonoBehaviour
                 horizontalWallNormal.Normalize();
                 // Use the normal directly - it should point away from the wall surface
                 wallJumpDirection = horizontalWallNormal;
+
+                // Preserve momentum magnitude while redirecting away from wall
+                float currentSpeed = horizontalVelocity.magnitude;
+                // Use current speed if significant, otherwise use wall jump force, but ensure minimum
+                float redirectedSpeed = Mathf.Max(currentSpeed, wallJumpHorizontalForce);
+
+                // Redirect velocity: keep magnitude, change direction
+                horizontalVelocity = wallJumpDirection * redirectedSpeed;
+
                 wallJumpVelocity = wallJumpHorizontalForce;
                 isWallJumping = true;
 
-                // Apply wall jump pushback as an impulse to horizontal velocity
-                horizontalVelocity += wallJumpDirection * wallJumpHorizontalForce;
-
-                Debug.Log($"Wall Jump! Normal: {wallNormal}, Direction: {wallJumpDirection}, Force: {wallJumpVelocity}");
+                Debug.Log($"Wall Jump! Normal: {wallNormal}, Direction: {wallJumpDirection}, Current Speed: {currentSpeed}, Redirected Speed: {redirectedSpeed}");
             }
             else
             {
@@ -188,22 +200,28 @@ public class MyCharacterController : MonoBehaviour
                 wallJumpDirection = wallNormal.normalized;
                 wallJumpDirection.y = 0f;
                 wallJumpDirection.Normalize();
+
+                // Preserve momentum magnitude while redirecting away from wall
+                float currentSpeed = horizontalVelocity.magnitude;
+                float redirectedSpeed = Mathf.Max(currentSpeed, wallJumpHorizontalForce);
+
+                // Redirect velocity: keep magnitude, change direction
+                horizontalVelocity = wallJumpDirection * redirectedSpeed;
+
                 wallJumpVelocity = wallJumpHorizontalForce;
                 isWallJumping = true;
 
-                // Apply wall jump pushback as an impulse to horizontal velocity
-                horizontalVelocity += wallJumpDirection * wallJumpHorizontalForce;
-
-                Debug.Log($"Wall Jump (fallback)! Direction: {wallJumpDirection}, Force: {wallJumpVelocity}");
+                Debug.Log($"Wall Jump (fallback)! Direction: {wallJumpDirection}, Current Speed: {currentSpeed}, Redirected Speed: {redirectedSpeed}");
             }
 
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             isWalled = false;
-            isDoubleJump = false; // Consume double jump when wall jumping
+            isDoubleJump = true; // Reset double jump when wall jumping
             return;
         }
 
-        if (Input.GetButtonDown("Jump") && !isGrounded && isDoubleJump)
+        // Double jump only if NOT on a wall (wall jump takes priority)
+        if (Input.GetButtonDown("Jump") && !isGrounded && !isWalled && isDoubleJump)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             isDoubleJump = false;

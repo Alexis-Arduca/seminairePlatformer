@@ -12,13 +12,13 @@ public class Player : MonoBehaviour
     public float dashForce = 5f;
     public float dashTime = 0.2f;
     private bool isDashing = false;
-    private bool canDash = true;
+    public bool canDash = true;
     private bool canCallActivation = true;
 
     [Header("Player Components")]
     public EchoMechanics echoMechanics;
     public CharacterController controller;
-    private MyCharacterController characterController;
+    public MyCharacterController characterController;
     private DashEffects dashEffects;
     private SmoothCameraController smoothCameraController;
 

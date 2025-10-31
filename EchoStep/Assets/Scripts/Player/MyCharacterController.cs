@@ -20,7 +20,7 @@ public class MyCharacterController : MonoBehaviour
     public Vector3 velocity;
     public bool isGrounded;
     public bool isWalled = false;
-    private bool isDoubleJump = true;
+    public bool isDoubleJump = true;
     private Vector3 wallNormal;
     [SerializeField] private float wallJumpForce = 10f;
     [SerializeField] private float wallJumpHorizontalForce = 12f;

@@ -9,7 +9,13 @@ public class EchoFrameData
     public List<string> inputs = new List<string>();
     public float rotationY;
     public float rotationX;
+
+    // Capacités du joueur à ce moment
+    public bool canDash;
+    public bool canDoubleJump;
+    public bool canWallJump;
 }
+
 
 public class EchoMechanics : MonoBehaviour
 {
@@ -70,18 +76,26 @@ public class EchoMechanics : MonoBehaviour
 
         frame.rotationY = transform.rotation.eulerAngles.y;
 
+        // 🔹 Ajoute l’état des capacités du joueur
+        Player player = GetComponent<Player>();
+        if (player != null)
+        {
+            frame.canDash = player.canDash;
+            frame.canDoubleJump = player.characterController.isDoubleJump;
+            frame.canWallJump = player.characterController.isWalled;
+        }
+
         recordedFrames.Add(frame);
 
         if (timer >= recordDuration)
         {
             isRecording = false;
-
             if (textRecording != null)
                 StartCoroutine(HideRecordingText());
-
             GameEventsManager.instance.playerEvents.OnPlayerActiveEcho();
         }
     }
+
 
     private void UpdateRecordingTimer()
     {

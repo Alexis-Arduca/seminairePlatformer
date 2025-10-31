@@ -1,97 +1,186 @@
 using UnityEngine;
+using System.Collections;
 
-[RequireComponent(typeof(UnityEngine.CharacterController))]
-public class MyCharacterController : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float baseMoveSpeed = 5f;
-    [SerializeField] private float gravity = -9.81f;
-    [SerializeField] private float jumpHeight = 2f;
+    public float moveSpeed = 5f;
+    public float jumpForce = 7f;
+    public float gravity = -9.81f;
     [SerializeField] private float mouseSensitivity = 200f;
-    private UnityEngine.CharacterController controller;
-    private Player player;
+    [SerializeField] private float minPitch = -89f;
+    [SerializeField] private float maxPitch = 89f;
+    private float cameraPitch = 0f;
 
-    [Header("Jump Settings")]
-    public Vector3 velocity;
-    public bool isGrounded;
-    public bool isWalled = false;
+    [Header("Air Control Settings")]
+    [SerializeField, Range(0f,1f)] private float airControl = 0.15f; // scale of input while airborne
+
+    [Header("Jump/Wall Settings")]
     private bool isDoubleJump = true;
+    private bool isWalled = false;
     private Vector3 wallNormal;
-    private float wallJumpForce = 10f;
+    [SerializeField] private float wallJumpHeight = 2.5f; // vertical boost for wall jump
+    [SerializeField] private float wallJumpImpulse = 8f;  // horizontal push away from wall
+    [SerializeField] private float extraMoveDecay = 8f;   // decay speed of horizontal impulse
+    private Vector3 extraMove = Vector3.zero;             // transient horizontal impulse
+
+    [Header("Dash Settings")]
+    public float dashCooldown = 0.5f;
+    public float dashForce = 5f;
+    public float dashTime = 0.2f;
+    private bool isDashing = false;
+    private bool canDash = true;
+    private bool canCallActivation = true;
+
+    [Header("Dash VFX")]
+    [SerializeField] private Camera playerCamera;          // Camera to apply FOV effect
+    [SerializeField] private float baseFOV = 60f;          // Default FOV when not dashing
+    [SerializeField] private float dashFOV = 80f;          // Target FOV during dash
+    [SerializeField] private float fovLerpSpeed = 10f;     // How quickly FOV changes
+
+    private CharacterController controller;
+    private Vector3 velocity;
 
     private void Start()
     {
-        controller = GetComponent<UnityEngine.CharacterController>();
+        controller = GetComponent<CharacterController>();
         if (controller == null)
         {
-            Debug.LogError("CharacterController component missing on " + gameObject.name);
+            controller = GetComponent<CharacterController>();
         }
 
-        player = GetComponent<Player>();
-        if (player == null)
+        if (playerCamera == null)
         {
-            Debug.LogError("Player component missing on " + gameObject.name);
+            playerCamera = Camera.main;
+        }
+        if (playerCamera != null)
+        {
+            baseFOV = playerCamera.fieldOfView;
         }
     }
 
     private void Update()
     {
-        if (controller == null || player == null) return;
+        // --- Mouse look (always active) ---
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        isGrounded = controller.isGrounded;
-        if (isGrounded && velocity.y < 0)
+        // Yaw: rotate the player
+        transform.Rotate(Vector3.up * mouseX);
+
+        // Pitch: rotate the camera locally
+        cameraPitch -= mouseY;
+        cameraPitch = Mathf.Clamp(cameraPitch, minPitch, maxPitch);
+        if (playerCamera != null)
         {
-            velocity.y = -2f;
-            isDoubleJump = true;
+            playerCamera.transform.localRotation = Quaternion.Euler(cameraPitch, 0f, 0f);
         }
 
-        float moveSpeed = baseMoveSpeed;
+        // --- Movement ---
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
         Vector3 move = transform.right * x + transform.forward * z;
-        controller.Move(move * moveSpeed * Time.deltaTime);
+        float controlScale = controller.isGrounded ? 1f : airControl;
 
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        transform.Rotate(Vector3.up * mouseX);
+        if (!isDashing)
+        {
+            controller.Move((move * moveSpeed * controlScale + extraMove) * Time.deltaTime);
+        }
 
-        JumpManager();
+        // decay any external impulse smoothly
+        extraMove = Vector3.Lerp(extraMove, Vector3.zero, extraMoveDecay * Time.deltaTime);
 
+        // Gravity always applies
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+
+        if (Input.GetButtonDown("Jump"))
+        {
+            if (controller.isGrounded)
+            {
+                // Ground jump
+                velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
+                isDoubleJump = true; // reset double jump when touching ground
+            }
+            else if (isWalled)
+            {
+                // Wall jump: push away from wall and reset double jump
+                Vector3 pushDir = wallNormal.normalized; // normal points away from wall
+                extraMove = pushDir * wallJumpImpulse;    // horizontal impulse
+                velocity.y = Mathf.Sqrt(wallJumpHeight * -2f * gravity); // vertical boost
+                isWalled = false;
+                isDoubleJump = true; // allow a double jump after wall jump
+            }
+            else if (isDoubleJump)
+            {
+                // Airborne double jump
+                velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
+                isDoubleJump = false;
+            }
+        }
+
+        // Dash input
+        if (Input.GetButtonDown("Dash") && canDash)
+        {
+            StartCoroutine(PerformDash());
+        }
     }
 
-    /// <summary>
-    /// Manage all Jumps (Normal Jump, Double Jump and Wall Jump)
-    /// </summary>
-    private void JumpManager()
+    private IEnumerator PerformDash()
     {
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        canDash = false;
+        isDashing = true;
+
+        Vector3 dashDirection = transform.forward;
+        float elapsed = 0f;
+
+        while (elapsed < dashTime)
         {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            // Move player forward
+            controller.Move(dashDirection * dashForce * Time.deltaTime);
+
+            // Ramp FOV toward dash FOV
+            if (playerCamera != null)
+            {
+                playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, dashFOV, fovLerpSpeed * Time.deltaTime);
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
         }
 
-        if (Input.GetButtonDown("Jump") && !isGrounded && isDoubleJump)
+        isDashing = false;
+
+        // Smoothly return FOV to base after dash
+        if (playerCamera != null)
         {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            isDoubleJump = false;
+            float t = 0f;
+            // Use a short smoothing window; break early when close enough
+            while (t < 1f && Mathf.Abs(playerCamera.fieldOfView - baseFOV) > 0.1f)
+            {
+                playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, baseFOV, fovLerpSpeed * Time.deltaTime);
+                t += Time.deltaTime;
+                yield return null;
+            }
+            playerCamera.fieldOfView = baseFOV;
         }
 
-        if (Input.GetButtonDown("Jump") && !isGrounded && isWalled)
-        {
-            Vector3 wallDirection = -wallNormal;
-            controller.Move(wallDirection * wallJumpForce * Time.deltaTime);
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-
-            isWalled = false;
-        }
+        yield return new WaitForSeconds(dashCooldown);
+        canDash = true;
+    }
+    private bool IsWall(Vector3 normal)
+    {
+        // Treat surfaces with near-horizontal normal (dot with up ~ 0) as walls
+        return Mathf.Abs(Vector3.Dot(normal.normalized, Vector3.up)) < 0.2f;
     }
 
-    /// <summary>
-    /// Detect collision with the wall
-    /// </summary>
-    /// <param name="hit"></param>
-    void OnControllerColliderHit(ControllerColliderHit hit)
+    private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        if (hit.collider.CompareTag("Wall")) { isWalled = true; wallNormal = hit.normal; }
+        // Only consider walls while airborne and with appropriate tag (or remove tag check if undesired)
+        if (!controller.isGrounded && IsWall(hit.normal))
+        {
+            isWalled = true;
+            wallNormal = hit.normal;
+        }
     }
 }
